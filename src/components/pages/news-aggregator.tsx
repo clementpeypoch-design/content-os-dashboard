@@ -20,14 +20,41 @@ var TOPICS = [
    RSS FEED SOURCES
    ═══════════════════════════════════════════ */
 var FEEDS = [
-  { url: "https://www.artofmanliness.com/feed/", source: "Art of Manliness", topics: ["masculinite", "developpement"] },
-  { url: "https://www.gottman.com/blog/feed/", source: "The Gottman Institute", topics: ["relations", "psychologie"] },
-  { url: "https://www.sexandpsychology.com/feed/", source: "Sex and Psychology", topics: ["sexualite", "psychologie", "dating"] },
-  { url: "https://goodmenproject.com/feed/", source: "The Good Men Project", topics: ["masculinite", "relations"] },
-  { url: "https://markmanson.net/feed", source: "Mark Manson", topics: ["developpement", "relations"] },
-  { url: "https://www.doctornerdlove.com/feed/", source: "Dr. NerdLove", topics: ["dating", "seduction", "relations"] },
-  { url: "https://ifstudies.org/blog/feed", source: "Institute for Family Studies", topics: ["relations", "psychologie"] },
-  { url: "https://www.conquerandwin.com/feed/", source: "Conquer and Win", topics: ["seduction", "masculinite", "developpement"] },
+  // FR - Blogs
+  { source: "Art de Séduire", lang: "fr" },
+  { source: "Mon Coaching Séduction", lang: "fr" },
+  { source: "Yann Piette", lang: "fr" },
+  { source: "Seduction by Kamal", lang: "fr" },
+  { source: "Hommes d'Influence", lang: "fr" },
+  { source: "Alexandre Cormont", lang: "fr" },
+  { source: "Antoine Peytavin", lang: "fr" },
+  { source: "Dragueur de Paris", lang: "fr" },
+  { source: "Comprendre les Hommes", lang: "fr" },
+  // FR - YouTube
+  { source: "SC 100Pitié (YT)", lang: "fr" },
+  { source: "Mon Coaching Séduction (YT)", lang: "fr" },
+  // EN - Blogs
+  { source: "Art of Manliness", lang: "en" },
+  { source: "The Gottman Institute", lang: "en" },
+  { source: "Sex and Psychology", lang: "en" },
+  { source: "The Good Men Project", lang: "en" },
+  { source: "Mark Manson", lang: "en" },
+  { source: "Dr. NerdLove", lang: "en" },
+  { source: "Institute for Family Studies", lang: "en" },
+  { source: "Conquer and Win", lang: "en" },
+  { source: "Evan Marc Katz", lang: "en" },
+  { source: "The Rational Male", lang: "en" },
+  { source: "Dating by Blaine", lang: "en" },
+  { source: "Matthew Hussey", lang: "en" },
+  { source: "Vanessa Van Edwards", lang: "en" },
+  { source: "Gary Vaynerchuk", lang: "en" },
+  { source: "John Keegan", lang: "en" },
+  // EN - YouTube
+  { source: "Chris Williamson (YT)", lang: "en" },
+  { source: "Hamza Ahmed (YT)", lang: "en" },
+  { source: "Casey Zander (YT)", lang: "en" },
+  { source: "Tripp Advice (YT)", lang: "en" },
+  { source: "Playing With Fire (YT)", lang: "en" },
 ];
 
 /* ═══════════════════════════════════════════
@@ -164,14 +191,23 @@ function ArticleCard({ article, index }) {
         if (article.url && article.url !== "#") window.open(article.url, "_blank");
       }}
     >
-      {/* Top row: source + date */}
+      {/* Top row: source + lang + date */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{
-          fontSize: 11, fontWeight: 700, color: K.accent,
-          background: K.accent + "12", padding: "3px 10px", borderRadius: 6,
-        }}>
-          {article.source}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: K.accent,
+            background: K.accent + "12", padding: "3px 10px", borderRadius: 6,
+          }}>
+            {article.source}
+          </span>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4,
+            color: (article.lang || "en") === "fr" ? "#60a5fa" : "#f87171",
+            background: (article.lang || "en") === "fr" ? "rgba(96,165,250,0.12)" : "rgba(248,113,113,0.12)",
+          }}>
+            {(article.lang || "en").toUpperCase()}
+          </span>
+        </div>
         <span style={{ fontSize: 11, color: K.fg3 }}>{relativeDate(article.date)}</span>
       </div>
 
@@ -219,6 +255,7 @@ export default function NewsAggregator() {
   var [articles, setArticles] = useState([]);
   var [loading, setLoading] = useState(true);
   var [activeTopic, setActiveTopic] = useState("all");
+  var [langFilter, setLangFilter] = useState("all");
   var [search, setSearch] = useState("");
   var [sortBy, setSortBy] = useState("date");
   var [fetchedCount, setFetchedCount] = useState(0);
@@ -243,6 +280,9 @@ export default function NewsAggregator() {
 
   /* Filtering and sorting */
   var filtered = articles.filter(function (a) {
+    if (langFilter !== "all") {
+      if ((a.lang || "en") !== langFilter) return false;
+    }
     if (activeTopic !== "all") {
       if (!a.topics || a.topics.indexOf(activeTopic) === -1) return false;
     }
@@ -336,7 +376,7 @@ export default function NewsAggregator() {
                 News Aggregator
               </h1>
               <p style={{ fontSize: 12, color: K.fg3, margin: 0 }}>
-                Psychologie masculine, relations, seduction et developpement
+                {FEEDS.length} sources FR + EN — Psychologie, relations, seduction, masculinite
               </p>
             </div>
           </div>
@@ -394,6 +434,30 @@ export default function NewsAggregator() {
                 color: K.fg, outline: "none", width: 260,
               }}
             />
+          </div>
+
+          {/* Language filter */}
+          <div style={{ display: "flex", gap: 3, background: K.bg2, border: "1px solid " + K.border, borderRadius: 8, padding: 3 }}>
+            {[
+              { id: "all", label: "Tous" },
+              { id: "fr", label: "FR" },
+              { id: "en", label: "EN" },
+            ].map(function (l) {
+              var active = langFilter === l.id;
+              return (
+                <button
+                  key={l.id}
+                  onClick={function () { setLangFilter(l.id); }}
+                  style={{
+                    padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
+                    background: active ? (l.id === "fr" ? "rgba(96,165,250,0.15)" : l.id === "en" ? "rgba(248,113,113,0.15)" : K.bg3) : "transparent",
+                    border: "none",
+                    color: active ? (l.id === "fr" ? "#60a5fa" : l.id === "en" ? "#f87171" : K.fg) : K.fg3,
+                  }}
+                >{l.label}</button>
+              );
+            })}
           </div>
 
           {/* Topic pills */}
@@ -572,22 +636,31 @@ export default function NewsAggregator() {
               fontSize: 10, fontWeight: 700, color: K.fg3, textTransform: "uppercase",
               letterSpacing: 0.8, margin: "0 0 10px",
             }}>
-              Flux RSS configures
+              Flux RSS ({FEEDS.length} sources)
             </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 320, overflowY: "auto" }}>
               {FEEDS.map(function (f, i) {
+                var isYt = (f.source || "").indexOf("(YT)") !== -1;
                 return (
                   <div key={i} style={{
-                    fontSize: 11, color: K.fg3, padding: "6px 10px",
+                    fontSize: 10, color: K.fg3, padding: "5px 8px",
                     borderRadius: 6, background: K.bg2,
-                    display: "flex", alignItems: "center", gap: 6,
+                    display: "flex", alignItems: "center", gap: 5,
                   }}>
                     <div style={{
-                      width: 6, height: 6, borderRadius: "50%", background: K.green,
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: isYt ? "#f45b5b" : K.green,
                       flexShrink: 0,
                     }} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                       {f.source}
+                    </span>
+                    <span style={{
+                      fontSize: 8, fontWeight: 700, padding: "1px 4px", borderRadius: 3, flexShrink: 0,
+                      color: (f.lang || "en") === "fr" ? "#60a5fa" : "#f87171",
+                      background: (f.lang || "en") === "fr" ? "rgba(96,165,250,0.12)" : "rgba(248,113,113,0.12)",
+                    }}>
+                      {(f.lang || "en").toUpperCase()}
                     </span>
                   </div>
                 );
