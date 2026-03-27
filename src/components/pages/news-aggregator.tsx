@@ -224,34 +224,21 @@ export default function NewsAggregator() {
   var [fetchedCount, setFetchedCount] = useState(0);
 
   useEffect(function () {
-    var fetched = [];
-
-    fetchFeeds(
-      FEEDS,
-      function (results) {
-        fetched = fetched.concat(results);
-        setFetchedCount(fetched.length);
-      },
-      function () {
-        if (fetched.length > 0) {
-          setArticles(fetched);
+    fetch("/api/rss")
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success && data.articles && data.articles.length > 0) {
+          setArticles(data.articles);
+          setFetchedCount(data.count);
         } else {
           setArticles(FALLBACK);
         }
         setLoading(false);
-      }
-    );
-
-    var timeout = setTimeout(function () {
-      if (loading) {
-        setArticles(function (prev) {
-          return prev.length > 0 ? prev : FALLBACK;
-        });
+      })
+      .catch(function () {
+        setArticles(FALLBACK);
         setLoading(false);
-      }
-    }, 6000);
-
-    return function () { clearTimeout(timeout); };
+      });
   }, []);
 
   /* Filtering and sorting */
